@@ -1,5 +1,5 @@
 # 120kW_ETL_pipeline
-120kw Extract, Tranform and Loading Pipeline using Marker-PDF
+120kW Extract, Tranform and Loading Pipeline using Marker-PDF
 
 ### Using Conda with Python Version = 3.10 and *activate the conda on the Workstation PC [conda activate myenv]
 ### Install Marker - pip install marker-pdf (also install all dependencies in python 3.10)

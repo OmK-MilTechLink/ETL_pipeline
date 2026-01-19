@@ -14,6 +14,8 @@ marker_pdf/                                  # Root directory for Marker-based d
 │       │
 │       ├── output_schema/                   # Clause-hierarchical JSON schema built from output_json
 │       │
+│       ├── scope/                           # Contains scope of the processed PDFs for standards recommendation
+│       │
 │       ├── output_json_chunk/               # Contains chunks created clause wise from json schema
 │       │
 │       └── output_images/                   # Contains all images that are referenced in the json schema
@@ -29,5 +31,7 @@ marker_pdf/                                  # Root directory for Marker-based d
 |   ├── path.py                              # Contains all the paths of the directory for Inputs and Outputs
 |   │
 |   ├── schema_to_chunks.py                  # converts all the json schema into chunks for knowledge graph creation
+|   │
+|   ├── extract_scope.py                     # code to extract all scope from the json of standard pdfs
 |   │
 |   └── marker_ini.py                        # initializing marker command line interface for processing documents

@@ -7,7 +7,7 @@ from sentence_transformers import SentenceTransformer
 import chromadb
 from chromadb.config import Settings
 
-from src.path import VECTOR_DB_DIR
+from path import VECTOR_DB_DIR
 
 # =========================================================
 # CONFIG
@@ -21,7 +21,7 @@ TOP_K = 5
 OVERFETCH_K = 20
 
 # =========================================================
-# UTILITIES (TEXT-AGNOSTIC)
+# UTILITIES (UNCHANGED)
 # =========================================================
 
 def tokenize(text: str):
@@ -38,7 +38,7 @@ def z_score(value, mean, std):
     return (value - mean) / std
 
 # =========================================================
-# CORE RETRIEVAL
+# CORE RETRIEVAL LOGIC (UNCHANGED)
 # =========================================================
 
 def retrieve_relevant_documents(query: str, top_k: int = TOP_K):
@@ -64,67 +64,46 @@ def retrieve_relevant_documents(query: str, top_k: int = TOP_K):
         include=["documents", "metadatas", "distances"]
     )
 
-    # Normalize cosine distance → similarity
-    similarities = [1.0 - (d / 2.0) for d in results["distances"][0]]
-
+    similarities = [1.0 - d for d in results["distances"][0]]
     mean_sim = statistics.mean(similarities)
     std_sim = statistics.pstdev(similarities)
 
     ranked = []
 
-    for i in range(len(results["ids"][0])):
-        similarity = similarities[i]
+    for i, similarity in enumerate(similarities):
         doc_text = results["documents"][0][i]
         doc_tokens = tokenize(doc_text)
 
         lexical = normalized_lexical_overlap(query_tokens, doc_tokens)
 
-        final_score = z_score(similarity, mean_sim, std_sim) + lexical * 0.1
+        score = z_score(similarity, mean_sim, std_sim) + lexical * 0.1
 
         ranked.append({
             "document_id": results["metadatas"][0][i]["document_id"],
             "similarity": round(similarity, 4),
-            "score": round(final_score, 4)
+            "score": round(score, 4)
         })
 
     ranked.sort(key=lambda x: x["score"], reverse=True)
-
-    cutoff = mean_sim - std_sim
-    filtered = [r for r in ranked if r["similarity"] >= cutoff]
-
-    if not filtered:
-        filtered = ranked[:top_k]
-
-    return filtered[:top_k]
+    return ranked[:top_k]
 
 # =========================================================
-# FASTAPI APP
+# FASTAPI
 # =========================================================
 
-app = FastAPI(
-    title="Standards Recommendation API",
-    version="2.0"
-)
+app = FastAPI(title="Standards Recommendation API", version="1.0")
 
-# =========================================================
-# REQUEST / RESPONSE
-# =========================================================
-
-class ScopeQuery(BaseModel):
+class RecommendationRequest(BaseModel):
     query: str
     top_k: int = TOP_K
 
-class ScopeResult(BaseModel):
+class RecommendationResult(BaseModel):
     document_id: str
     similarity: float
     score: float
 
-# =========================================================
-# ENDPOINT
-# =========================================================
-
-@app.post("/recommend", response_model=List[ScopeResult])
-def recommend_standards(req: ScopeQuery):
+@app.post("/recommend", response_model=List[RecommendationResult])
+def recommend(req: RecommendationRequest):
     return retrieve_relevant_documents(
         query=req.query,
         top_k=req.top_k

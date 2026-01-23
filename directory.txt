@@ -39,7 +39,7 @@ ETL_pipeline/
 │   │   ├── json_to_schema.py                     # Build hierarchical clause schema
 │   │   ├── schema_to_chunks.py                   # Convert schema → clause chunks
 │   │   ├── chunk_limit_char.py                   # Enforce character limit for RAG
-│   │   └── extract_scope.py                      # Extract Scope section per standard
+│   │   └── extract_scope.py                      # Extract Scope, Document Title, Heading and Test Heading section per standard
 │   │
 │   ├── rag/                                      # RAG-only services (embeddings + retrieval)
 │   │   │
